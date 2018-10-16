@@ -8,10 +8,10 @@ function [x] = FK(q)
     global l2
     
     q = q*D2R;    
-    x1 = l1*cos(q(:,1));
-    y1 = l1*sin(q(:,1));    
-    x2 = x1 + l2*cos(q(:,1)+q(:,2));
-    y2 = y1 + l2*sin(q(:,1)+q(:,2));
+    x1 = l1*sin(q(:,1));
+    y1 = -l1*cos(q(:,1));
+    x2 = x1 + l2*sin(q(:,1)+q(:,2));
+    y2 = y1 - l2*cos(q(:,1)-q(:,2));
     
     x = [x2, y2];
 end

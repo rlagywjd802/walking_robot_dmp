@@ -213,8 +213,8 @@ for i = 0 : dt : tf
     x1 = l1*cos(q1);    y1 = l1*sin(q1);        
     
     % Save the results of end-effector position, velocity, acceleration
-	x1_save(n) = x2;      % Save the end-effector position
-	x2_save(n) = y2;
+    x1_save(n) = x2;      % Save the end-effector position
+    x2_save(n) = y2;
     dx1_save(n) = dy_t(1);
     dx2_save(n) = dy_t(2);
     ddx1_save(n) = ddy_t(1);
@@ -225,13 +225,13 @@ for i = 0 : dt : tf
     q_save(n, 2) = q2*R2D;
     
     % Calculate the coordinates of robot geometry for animation 
-	Ax1 = [0, x1];  
-	Ay1 = [0, y1];
-   	Ax2 = [x1, x2];   
-	Ay2 = [y1, y2];
+    Ax1 = [0, x1];  
+    Ay1 = [0, y1];
+    Ax2 = [x1, x2];   
+    Ay2 = [y1, y2];
    
     % Update the animation
-	if rem(n,5) == 0
+    if rem(n,5) == 0
         set(p1,'X', Ax1, 'Y',Ay1);
         set(p2,'X', Ax2, 'Y',Ay2);
         drawnow
@@ -239,14 +239,14 @@ for i = 0 : dt : tf
     %pause(0.1);    
   
     % Save 1st and 2nd joint's location, (x1, y1) and (x2, y2)
-	if rem(n,1) == 0
+    if rem(n,1) == 0
         x_save(n_trj) = x2;
         y_save(n_trj) = y2;
         n_trj = n_trj + 1;        
     end
     
     % Increase the iteration number
-	n=n+1;    
+    n=n+1;    
 
 end
 
