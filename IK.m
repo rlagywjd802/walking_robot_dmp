@@ -13,8 +13,5 @@ function [q1,q2]=IK(x2, y2)
 
     q2 = -q2;
     q1 = q1 - (3./2.)*pi;
-    
-    
-    
-
+ 
 end

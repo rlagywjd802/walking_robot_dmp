@@ -48,7 +48,7 @@ l1 = 0.2;
 l2 = 0.2;
 
 % Constant Parameters %
-az = 1;
+az = 5;
 ay = [7, 7];
 by = [7, 7];
 
@@ -74,7 +74,7 @@ z = exp(-az/tau*T);
 % Basis Function %
 des_c = linspace(0, tf, n_bfs);     
 c = exp(-az/tau*des_c);             % mean
-h = n_bfs^1.5./c;                   % variance
+h = n_bfs^2./c;                   % variance
 psi = zeros(timestep, n_bfs);
 
 % Psi %
@@ -237,8 +237,8 @@ for i = 0 : dt : tf
     ddx2_save(n) = ddy_t(2);
     f1_save(n) = f_t(1);
     f2_save(n) = f_t(2);
-    q_save(n, 1) = q1*R2D;
-    q_save(n, 2) = q2*R2D;
+    q_save(n, 1) = (q1-3./2.*pi)*R2D;
+    q_save(n, 2) = -q2*R2D;
     
     % Calculate the coordinates of robot geometry for animation 
     Ax1 = [0, x1];  
@@ -252,7 +252,7 @@ for i = 0 : dt : tf
         set(p2,'X', Ax2, 'Y',Ay2);
         drawnow
     end
-%     pause(0.1);    
+    pause(0.05);    
   
     % Save 1st and 2nd joint's location, (x1, y1) and (x2, y2)
     if rem(n,1) == 0
@@ -270,68 +270,84 @@ end
 % Plot the graph of end-effector
 figure(2)
 subplot(2,1,1)
-plot(T, y_d(:,1), 'g', T, x1_save, 'b', 'linewidth', 0.8)
-title('< end-effector x position >')
+plot(T, y_d(:,1), 'g', T, q_save(:, 1), 'b', 'linewidth', 0.8)
+title('< q1 angular position >')
 legend('demonstration', 'reproduction')
 xlabel('t (sec)')
-ylabel('x (m)')
+ylabel('q1 (deg)')
 xlim([0 tf])
 subplot(2,1,2)
-plot(T, y_d(:,2), 'g',  T, x2_save, 'b', 'linewidth', 0.8)
-title('< end-effector y position >')
+plot(T, y_d(:,2), 'g',  T, q_save(:, 2), 'b', 'linewidth', 0.8)
+title('< q2 angular position >')
 legend('demonstration', 'reproduction')
 xlabel('t (sec)')
-ylabel('y (m)')
+ylabel('q2 (deg)')
 xlim([0 tf])
 
-figure(3)
-subplot(2,1,1)
-plot(T, dy_d(:,1), 'g', T, dx1_save, 'b', 'linewidth', 0.8)
-title('< end-effector x velocity >')
-legend('demonstration', 'reproduction')
-xlabel('t (sec)')
-ylabel('xdot (m)')
-xlim([0 tf])
-subplot(2,1,2)
-plot(T, dy_d(:,2), 'g', T, dx2_save, 'b', 'linewidth', 0.8)
-title('< end-effector y velocity >')
-legend('demonstration', 'reproduction')
-xlabel('t (sec)')
-ylabel('ydot (m)')
-xlim([0 tf])
+% figure(2)
+% subplot(2,1,1)
+% plot(T, y_d(:,1), 'g', T, x1_save, 'b', 'linewidth', 0.8)
+% title('< end-effector x position >')
+% legend('demonstration', 'reproduction')
+% xlabel('t (sec)')
+% ylabel('x (m)')
+% xlim([0 tf])
+% subplot(2,1,2)
+% plot(T, y_d(:,2), 'g',  T, x2_save, 'b', 'linewidth', 0.8)
+% title('< end-effector y position >')
+% legend('demonstration', 'reproduction')
+% xlabel('t (sec)')
+% ylabel('y (m)')
+% xlim([0 tf])
 
-figure(4)
-subplot(2,1,1)
-plot(T, ddy_d(:,1), 'g', T, ddx1_save, 'b', 'linewidth', 0.8)
-title('< end-effector x acceleration >')
-legend('demonstration', 'reproduction')
-xlabel('t (sec)')
-ylabel('xddot (m)')
-xlim([0 tf])
-subplot(2,1,2)
-plot(T, ddy_d(:,2), 'g', T, ddx2_save, 'b', 'linewidth', 0.8)
-title('< end-effector y acceleration >')
-legend('demonstration', 'reproduction')
-xlabel('t (sec)')
-ylabel('yddot (m)')
-xlim([0 tf])
-
-figure(5)
-subplot(2,1,1)
-plot(T, f_ref(:,1), 'g', T, f1_save, 'b', 'linewidth', 0.8)
-title('< Reference Force >')
-legend('x (m/s)', 'y (m/s)')
-xlabel('t (sec)')
-ylabel('x (m)')
-xlim([0 tf])
-subplot(2,1,2)
-plot(T, f_ref(:,2), 'g', T, f2_save, 'b', 'linewidth', 0.8)
-title('< Force >')
-legend('x (m/s^2)', 'y (m/s^2)')
-xlabel('t (sec)')
-ylabel('x (m)')
-xlim([0 tf])
-
+% figure(3)
+% subplot(2,1,1)
+% plot(T, dy_d(:,1), 'g', T, dx1_save, 'b', 'linewidth', 0.8)
+% title('< end-effector x velocity >')
+% legend('demonstration', 'reproduction')
+% xlabel('t (sec)')
+% ylabel('xdot (m)')
+% xlim([0 tf])
+% subplot(2,1,2)
+% plot(T, dy_d(:,2), 'g', T, dx2_save, 'b', 'linewidth', 0.8)
+% title('< end-effector y velocity >')
+% legend('demonstration', 'reproduction')
+% xlabel('t (sec)')
+% ylabel('ydot (m)')
+% xlim([0 tf])
+% 
+% figure(4)
+% subplot(2,1,1)
+% plot(T, ddy_d(:,1), 'g', T, ddx1_save, 'b', 'linewidth', 0.8)
+% title('< end-effector x acceleration >')
+% legend('demonstration', 'reproduction')
+% xlabel('t (sec)')
+% ylabel('xddot (m)')
+% xlim([0 tf])
+% subplot(2,1,2)
+% plot(T, ddy_d(:,2), 'g', T, ddx2_save, 'b', 'linewidth', 0.8)
+% title('< end-effector y acceleration >')
+% legend('demonstration', 'reproduction')
+% xlabel('t (sec)')
+% ylabel('yddot (m)')
+% xlim([0 tf])
+% 
+% figure(5)
+% subplot(2,1,1)
+% plot(T, f_ref(:,1), 'g', T, f1_save, 'b', 'linewidth', 0.8)
+% title('< Reference Force >')
+% legend('x (m/s)', 'y (m/s)')
+% xlabel('t (sec)')
+% ylabel('x (m)')
+% xlim([0 tf])
+% subplot(2,1,2)
+% plot(T, f_ref(:,2), 'g', T, f2_save, 'b', 'linewidth', 0.8)
+% title('< Force >')
+% legend('x (m/s^2)', 'y (m/s^2)')
+% xlabel('t (sec)')
+% ylabel('x (m)')
+% xlim([0 tf])
+% 
 figure(6)
 out = zeros(timestep, n_bfs, n_dofs);
 sum = zeros(timestep);
@@ -351,23 +367,21 @@ plot(T, out(:, :, 1))
 xlabel('t')
 ylabel('\psi_i')
 xlim([0 tf])
-
-figure(7)
-subplot(2,1,1)
-plot(T, z);
-subplot(2,1,2)
-plot(T, sum);
-
-figure(8)
-% title('Animation')
-grid
-hold on
-axis([-0.2 0.2 0 0.4]);
-% Draw trajectory 
-%plot(x_d(:, 1), x_d(:, 2), 'g', 'linewidth', 1)
-plot(x_save, y_save, 'b')
-xlabel('x (m)')
-ylabel('y (m)')
-%legend('demonstration', 'reproduction')
-
-
+% 
+% figure(7)
+% subplot(2,1,1)
+% plot(T, z);
+% subplot(2,1,2)
+% plot(T, sum);
+% 
+% figure(8)
+% % title('Animation')
+% grid
+% hold on
+% axis([-0.2 0.2 0 0.4]);
+% % Draw trajectory 
+% %plot(x_d(:, 1), x_d(:, 2), 'g', 'linewidth', 1)
+% plot(x_save, y_save, 'b')
+% xlabel('x (m)')
+% ylabel('y (m)')
+% %legend('demonstration', 'reproduction')

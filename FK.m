@@ -7,7 +7,7 @@ function [x] = FK(q)
     global l1
     global l2
     
-    q1 = 3*pi/2 + q(:, 1)*D2R;
+    q1 = 3./2.*pi + q(:, 1)*D2R;
     q2 = - q(:, 2)*D2R;
     x1 = l1*cos(q1);
     y1 = l1*sin(q1);
