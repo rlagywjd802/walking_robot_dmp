@@ -1,0 +1,16 @@
+function [q1,q2]=IK(x2, y2)
+    global l1;
+    global l2;
+    
+    c2 = (x2^2+y2^2-l1^2-l2^2)/(2*l1*l2);
+    s2 = -sqrt(1-c2^2) % elbow-up
+    q2 = atan2(s2,c2);
+    
+    s1 = (l1+l2*c2)x
+   
+
+    q1 = atan2(y2,x2) + q2/2;
+    
+    
+
+end
