@@ -32,9 +32,10 @@ D2R = pi/180;
 %-------------------------------------------%
 
 q_d = load("data/walking_joint_angle.txt");
-dt = 0.001;
+dt = 0.001; % 0.001
 timestep = length(q_d);
 tf = dt*(timestep-1);
+% tf = 5;
 T = 0:dt:tf;
 
 
@@ -44,22 +45,22 @@ T = 0:dt:tf;
 %-------------------------------------------%
 
 % Robot Parameters 
-l1 = 0.2;
-l2 = 0.2;
+l1 = 0.5;  % 0.5 | 0.39
+l2 = 0.5;  % 0.5 | 0.46
 
 % Constant Parameters %
 az = 5;
-ay = [7, 7];
-by = [7, 7];
+ay = [5, 5];
+by = [5, 5];
 
 % Canonical System %
-tau = 1;
+tau = 0.8;
 error = 0.0;
 error_coupling = 1.0 / (1.0+error);
 
 % DMP Parameters %
 n_dofs = 2; % number of degree of freedom
-n_bfs = 100; % number of basis function per DMP
+n_bfs = 100; % number of basis function per DMP  100
 
 
 
@@ -69,17 +70,20 @@ n_bfs = 100; % number of basis function per DMP
 %-------------------------------------------%
 
 % Canonical System %
-z = exp(-az/tau*T);
+% z = exp(-az*T);
+z = exp(-az*tau*T);
 
 % Basis Function %
-des_c = linspace(0, tf, n_bfs);     
-c = exp(-az/tau*des_c);             % mean
-h = n_bfs^2./c;                   % variance
+des_c = linspace(0, tf, n_bfs);
+c = exp(-az*des_c*tau);
+h = n_bfs^2./c;                     % variance
 psi = zeros(timestep, n_bfs);
 
 % Psi %
 for b=1:n_bfs
     psi(:,b) = exp(-h(b)*(z-c(b)).^2);
+%     psi(:,b) = exp(-h(b)*(mod(z,2*pi)-c(b)).^2);
+%     psi(:,b) = exp(h(b).*cos(z-c(b))-1);
 end
 
 
@@ -91,11 +95,9 @@ end
 %          : y_0, goal[n_dofs]
 %------------------------------------------------------%
 
-% Cartesian Space(m) desired path
-% path = x_d;
 % Joint Space(rad) desired path
 path = q_d;
-path_dt = 0.005;
+path_dt = 0.005;    
 path_len = length(path);
 path_T = 0:path_dt:(path_len-1)*path_dt;
 
@@ -156,7 +158,7 @@ for n=1:n_dofs
             w(n, b) = 0;
         else
             w(n, b) = numer / (k*denom);
-        end        
+        end
     end
 end
 
@@ -168,7 +170,7 @@ end
 % 7. Change the goal
 %   Output : 
 %-----------------------------------------------------------------------%
-%goal = [-0.1 ,0.2]; %left hit(test)
+% goal = [20, 5];
 
 %-----------------------------------------------------------------------%
 % 8. Generate trajectory to track
@@ -186,11 +188,12 @@ n = 1;        %Iterator for main loop
 n_trj = 1;
 
 % Plot Setting %
-figure(1)
+f1 = figure(1);
+movegui(f1,'northwest');
 title('Animation')
 grid
 hold on
-axis([-0.5 0.5 -0.5 0.5]);
+axis([-1.0 1.0 -1.5 0.5]);
    Ax1 = [0, l1];
    Ay1 = [0, 0];
    Ax2 = [l1, l1+l2];
@@ -199,11 +202,14 @@ axis([-0.5 0.5 -0.5 0.5]);
    p2 = line(Ax2,Ay2,'LineWidth',[5],'Color','c');
 
 
+
+
 % Robot Implementation 
 for i = 0 : dt : tf
     
     % Run Canonical System %
-    z_t = z_t + (-az*z_t*error_coupling)*tau*dt;  % [1]
+%     z_t = z_t + (-az*z_t*error_coupling)*tau*dt;  % [1] % ????
+    z_t = z_t + (-az*z_t)*tau*dt;
     [y_t, dy_t, ddy_t, f_t] = dmp_step(z_t, y_t, dy_t, ddy_t);
     
 %     % Inverse Kinematics -- Cartesian Space
@@ -266,23 +272,31 @@ for i = 0 : dt : tf
 
 end
 
+y_save = y_save+1;   % 0.85
+T = T*50;
+leng = length(T);
 
 % Plot the graph of end-effector
-figure(2)
+f2 = figure(2);
+movegui(f2,'north');
 subplot(2,1,1)
 plot(T, y_d(:,1), 'g', T, q_save(:, 1), 'b', 'linewidth', 0.8)
-title('< q1 angular position >')
+title('< Hip Joint Angle Trajectory >')
 legend('demonstration', 'reproduction')
 xlabel('t (sec)')
-ylabel('q1 (deg)')
-xlim([0 tf])
+ylabel('Hip Joint Angle (deg)')
+axis([0 T(leng) -50 100]);
+% xlim([0 T(leng])
+% xlim([0 0.15])
 subplot(2,1,2)
 plot(T, y_d(:,2), 'g',  T, q_save(:, 2), 'b', 'linewidth', 0.8)
-title('< q2 angular position >')
+title('< Knee Joint Angle Trajectory >')
 legend('demonstration', 'reproduction')
 xlabel('t (sec)')
-ylabel('q2 (deg)')
-xlim([0 tf])
+ylabel('Knee Joint Angle (deg)')
+axis([0 T(leng) 0 150]);
+% xlim([0 T(leng])
+% xlim([0 0.15])
 
 % figure(2)
 % subplot(2,1,1)
@@ -291,14 +305,14 @@ xlim([0 tf])
 % legend('demonstration', 'reproduction')
 % xlabel('t (sec)')
 % ylabel('x (m)')
-% xlim([0 tf])
+% xlim([0 T(leng])
 % subplot(2,1,2)
 % plot(T, y_d(:,2), 'g',  T, x2_save, 'b', 'linewidth', 0.8)
 % title('< end-effector y position >')
 % legend('demonstration', 'reproduction')
 % xlabel('t (sec)')
 % ylabel('y (m)')
-% xlim([0 tf])
+% xlim([0 T(leng])
 
 % figure(3)
 % subplot(2,1,1)
@@ -307,14 +321,14 @@ xlim([0 tf])
 % legend('demonstration', 'reproduction')
 % xlabel('t (sec)')
 % ylabel('xdot (m)')
-% xlim([0 tf])
+% xlim([0 T(leng)])
 % subplot(2,1,2)
 % plot(T, dy_d(:,2), 'g', T, dx2_save, 'b', 'linewidth', 0.8)
 % title('< end-effector y velocity >')
 % legend('demonstration', 'reproduction')
 % xlabel('t (sec)')
 % ylabel('ydot (m)')
-% xlim([0 tf])
+% xlim([0 T(leng)])
 % 
 % figure(4)
 % subplot(2,1,1)
@@ -323,14 +337,14 @@ xlim([0 tf])
 % legend('demonstration', 'reproduction')
 % xlabel('t (sec)')
 % ylabel('xddot (m)')
-% xlim([0 tf])
+% xlim([0 T(leng])
 % subplot(2,1,2)
 % plot(T, ddy_d(:,2), 'g', T, ddx2_save, 'b', 'linewidth', 0.8)
 % title('< end-effector y acceleration >')
 % legend('demonstration', 'reproduction')
 % xlabel('t (sec)')
 % ylabel('yddot (m)')
-% xlim([0 tf])
+% xlim([0 T(leng])
 % 
 % figure(5)
 % subplot(2,1,1)
@@ -348,6 +362,8 @@ xlim([0 tf])
 % ylabel('x (m)')
 % xlim([0 tf])
 % 
+
+% psi
 figure(6)
 out = zeros(timestep, n_bfs, n_dofs);
 sum = zeros(timestep);
@@ -359,29 +375,41 @@ for n=1:n_dofs
 end
 subplot(2,1,1)
 plot(T, psi);
-xlabel('t')
+xlabel('time')
 ylabel('\psi_i')
-xlim([0 tf])
+% xlim([0 tf])
 subplot(2,1,2)
 plot(T, out(:, :, 1))
-xlabel('t')
+xlabel('time')
 ylabel('\psi_i')
-xlim([0 tf])
-% 
+% xlim([0 tf])
+
+figure(7)
+plot(T, psi);
+xlabel('time')
+ylabel('\psi_i')
+
+figure(9)
+plot(T, out(:, :, 1))
+xlabel('time')
+ylabel('\psi_i')
+
 % figure(7)
 % subplot(2,1,1)
 % plot(T, z);
 % subplot(2,1,2)
 % plot(T, sum);
-% 
-% figure(8)
-% % title('Animation')
-% grid
-% hold on
-% axis([-0.2 0.2 0 0.4]);
-% % Draw trajectory 
-% %plot(x_d(:, 1), x_d(:, 2), 'g', 'linewidth', 1)
-% plot(x_save, y_save, 'b')
-% xlabel('x (m)')
-% ylabel('y (m)')
-% %legend('demonstration', 'reproduction')
+
+
+f8 = figure(8);
+movegui(f8,'northeast');
+% title('Animation')
+grid
+hold on
+axis([-0.8 0.8 -0.2 1.2]);
+% Draw trajectory 
+%plot(x_d(:, 1), x_d(:, 2), 'g', 'linewidth', 1)
+plot(x_save, y_save, 'b')
+xlabel('x (m)')
+ylabel('y (m)')
+%legend('demonstration', 'reproduction')
